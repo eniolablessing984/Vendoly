@@ -13,6 +13,7 @@ import CartPage from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 import Analytics from './pages/Analytics'
+import NotFound from './pages/NotFound'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { CartProvider, useCart } from './context/CartContext'
 
@@ -27,9 +28,9 @@ function AppShell() {
     return () => clearTimeout(timer)
   }, [toast])
 
-  const handleAddToCart = (product) => {
-    addItem(product)
-    setToast(`${product.title} added to cart`)
+  const handleAddToCart = (product, quantity = 1) => {
+    addItem(product, quantity)
+    setToast(`${quantity} ${quantity === 1 ? 'item' : 'items'} added to cart`)
   }
 
   return (
@@ -48,6 +49,7 @@ function AppShell() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
           <Route path="/analytics" element={<RequireAuth><Analytics /></RequireAuth>} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
 
       {toast && (

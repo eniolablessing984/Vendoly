@@ -1,4 +1,6 @@
 import  { createContext, useContext, useEffect, useState } from 'react'
+import { getAvailableQuantity } from '../data/marketplaceFormat'
+import * as productService from '../data/productService'
 
 const CartContext = createContext(null)
 
@@ -9,10 +11,19 @@ export function useCart(){
 }
 
 export function CartProvider({ children }){
+  const [storageAvailable, setStorageAvailable] = useState(() => {
+    try {
+      localStorage.getItem('vendor_cart')
+      return true
+    } catch {
+      return false
+    }
+  })
   const [cart, setCart] = useState(() => {
     try{
       const raw = localStorage.getItem('vendor_cart')
-      return raw ? JSON.parse(raw) : []
+      const savedCart = raw ? JSON.parse(raw) : []
+      return Array.isArray(savedCart) ? savedCart.filter(item => item && item.id).map(item => ({ ...item, qty: Math.max(1, Math.floor(Number(item.qty) || 1)) })) : []
     } catch {
       return []
     }
@@ -21,18 +32,24 @@ export function CartProvider({ children }){
   useEffect(() => {
     try{
       localStorage.setItem('vendor_cart', JSON.stringify(cart))
+      setStorageAvailable(true)
     }catch{
-      // The in-memory cart remains available when browser storage is unavailable.
+      setStorageAvailable(false)
     }
   }, [cart])
 
-  function addItem(product){
-    setCart((c) => {
-      const existing = c.find(it => it.id === product.id)
-      if(existing){
-        return c.map(it => it.id === product.id ? { ...it, qty: it.qty + 1 } : it)
+  function addItem(product, quantity = 1){
+    const requestedQuantity = Math.max(1, Math.floor(Number(quantity) || 1))
+    setCart(current => {
+      const existing = current.find(item => item.id === product.id)
+      const currentQuantity = existing?.qty || 0
+      const stock = getAvailableQuantity(product)
+      if (currentQuantity >= stock) return current
+      const nextQuantity = Math.min(currentQuantity + requestedQuantity, stock)
+      if (existing) {
+        return current.map(item => item.id === product.id ? { ...item, ...product, qty: nextQuantity } : item)
       }
-      return [...c, { ...product, qty: 1 }]
+      return [...current, { ...product, qty: nextQuantity }]
     })
   }
 
@@ -43,7 +60,11 @@ export function CartProvider({ children }){
   function setQuantity(productId, qty){
     setCart((c) => {
       if (qty <= 0) return c.filter(it => it.id !== productId)
-      return c.map(it => it.id === productId ? { ...it, qty } : it)
+      const product = c.find(it => it.id === productId)
+      const currentProduct = productService.getById(productId)
+      const stockSource = currentProduct || product
+      if (currentProduct && getAvailableQuantity(currentProduct) === 0) return c.filter(it => it.id !== productId)
+      return c.map(it => it.id === productId ? { ...it, ...(currentProduct || {}), qty: Math.min(Math.floor(Number(qty) || 1), getAvailableQuantity(stockSource)) } : it)
     })
   }
 
@@ -51,7 +72,7 @@ export function CartProvider({ children }){
     setCart([])
   }
 
-  const value = { cart, addItem, removeItem, clearCart, setQuantity }
+  const value = { cart, addItem, removeItem, clearCart, setQuantity, storageAvailable }
 
   return (
     <CartContext.Provider value={value}>{children}</CartContext.Provider>

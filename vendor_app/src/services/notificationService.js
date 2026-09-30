@@ -1,7 +1,16 @@
+import { formatMoney } from '../data/marketplaceFormat'
+
 const STORAGE_KEY = 'vendor_notifications'
 
 function load(){
-  try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : [] }catch{ return [] }
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return []
+    const savedNotifications = JSON.parse(raw)
+    return Array.isArray(savedNotifications)
+      ? savedNotifications.filter(item => item && typeof item === 'object' && item.id != null)
+      : []
+  }catch{ return [] }
 }
 function save(list){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(list)) }catch{
   // Notifications can still be returned even when they cannot be persisted.
@@ -16,8 +25,6 @@ export async function sendEmail({ to, subject, body }){
   const item = { id, to, subject, body, sentAt: new Date().toISOString() }
   list.push(item)
   save(list)
-  // also print to console for developer visibility
-  console.info('Mock email sent:', item)
   return item
 }
 
@@ -25,7 +32,7 @@ export async function sendOrderNotification(order){
   if(!order) return null
   const to = order.shipping?.email || 'customer@example.com'
   const subject = `Order received — ${order.id || ''}`
-  const body = `Thanks for your order. Order ID: ${order.id || ''}\nTotal: $${order.total}\nItems: ${order.items?.length || 0}`
+  const body = `Thanks for your order. Order ID: ${order.id || ''}\nTotal: ${formatMoney(order.total, order.currency)}\nItems: ${order.items?.length || 0}`
   return sendEmail({ to, subject, body })
 }
 
