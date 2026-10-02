@@ -4,9 +4,11 @@ import { Link } from 'react-router-dom'
 import { calculateSubtotalMinor, formatMinorMoney, getAvailableQuantity, getSellerName, toMinorUnits } from '../data/marketplaceFormat'
 import * as productService from '../data/productService'
 import CatalogImage from '../components/CatalogImage'
+import { useAuth } from '../context/AuthContext'
 
 export default function CartPage(){
   const { cart, removeItem, clearCart, setQuantity, storageAvailable } = useCart()
+  const { user } = useAuth()
   const currentCart = productService.refreshCartItems(cart)
   const subtotalMinor = calculateSubtotalMinor(currentCart)
   const hasStockIssue = currentCart.some(item => !item.catalogAvailable || item.qty > getAvailableQuantity(item))
@@ -49,7 +51,7 @@ export default function CartPage(){
               <div className="mt-3 flex justify-between text-sm text-slate-600"><span>Standard delivery</span><span className="font-medium text-[#34775d]">Free (demo)</span></div>
               <div className="my-5 border-t border-slate-100" />
               <div className="flex justify-between font-semibold text-slate-900"><span>Total</span><span>{formatMinorMoney(subtotalMinor)}</span></div>
-              {hasStockIssue ? <div role="alert" className="mt-5 rounded-xl bg-red-50 p-3 text-sm text-red-700">Remove unavailable products or adjust quantities to match stock before checkout.</div> : <Link to="/checkout" className="mt-5 flex w-full justify-center rounded-full bg-[#1d5a49] px-4 py-3.5 text-sm font-semibold text-white hover:bg-[#164638]">Continue to checkout</Link>}
+              {hasStockIssue ? <div role="alert" className="mt-5 rounded-xl bg-red-50 p-3 text-sm text-red-700">Remove unavailable products or adjust quantities to match stock before checkout.</div> : <Link to={user ? '/checkout' : '/login'} state={user ? undefined : { from: { pathname: '/checkout' } }} className="mt-5 flex w-full justify-center rounded-full bg-[#1d5a49] px-4 py-3.5 text-sm font-semibold text-white hover:bg-[#164638]">Continue to checkout</Link>}
               <button type="button" className="mt-4 text-xs font-medium text-slate-600 hover:text-red-700" onClick={clearCart}>Clear cart</button>
             </aside>
           </div>

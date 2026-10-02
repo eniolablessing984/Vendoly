@@ -93,6 +93,7 @@ Keep the app running against its existing local demo data while we finish and re
 - [x] Add accessible-size carousel controls and pause/resume, pause autoplay during pointer or keyboard interaction, keep controls away from the product link, and honor reduced-motion preferences.
 - [x] Stop assigning unrelated local photos to sample products, including older copies in browser storage; show the no-image fallback instead.
 - [x] Add category-matched sample product photography for all sample catalog entries; keep source credits in `ASSET_ATTRIBUTIONS.md`.
+- [x] At a 390×844 CSS viewport, manually tab through the homepage header, hero, carousel, category filters, sort, and product links; confirm named controls and visible 3px focus outlines, including the white separation ring over dark carousel controls.
 - [x] Check loading, empty, and failure presentation across customer and seller routes for the current local-data flows; repeat the review for API requests when introduced.
 
 **Done when:** the frontend is internally consistent and ready to connect to real APIs.

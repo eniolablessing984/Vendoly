@@ -25,10 +25,6 @@ export default function Header() {
   const searchParam = new URLSearchParams(location.search).get('q') || ''
   const [query, setQuery] = useState(searchParam)
 
-  useEffect(() => {
-    setQuery(searchParam)
-  }, [searchParam])
-
   const ref = useRef(null)
 
   // Document click listener for outside clicks
@@ -66,13 +62,21 @@ export default function Header() {
 
         <div className="site-header-controls absolute right-0 top-3 flex items-center gap-2 sm:relative sm:order-4 sm:col-auto sm:row-auto" ref={ref}>
           {!user ? (
-            <Link to="/signin" className="rounded-full px-2 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 sm:px-3 sm:text-sm">
-              Sign in
-            </Link>
+            <div className="flex items-center gap-1">
+              <Link to="/login" className="rounded-full px-2 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 sm:px-3 sm:text-sm">
+                Log in
+              </Link>
+              <Link to="/signup" className="rounded-full border border-slate-200 bg-slate-50 px-2 py-2 text-xs font-semibold text-slate-800 hover:border-[#94c9b5] hover:bg-[#f5faf7] sm:px-3 sm:text-sm">
+                Sign up
+              </Link>
+            </div>
           ) : (
-            <button type="button" onClick={() => signout()} className="rounded-full px-2 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 sm:px-3 sm:text-sm">
-              Sign out
-            </button>
+            <div className="flex items-center gap-1">
+              {user.role === 'admin' && <Link to="/admin/dashboard" className="rounded-full px-2 py-2 text-xs font-semibold text-[#1d5a49] hover:bg-[#e9f3ed] sm:px-3 sm:text-sm">Admin</Link>}
+              <button type="button" onClick={() => signout()} className="rounded-full px-2 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 sm:px-3 sm:text-sm">
+                Sign out
+              </button>
+            </div>
           )}
           <button
             type="button"

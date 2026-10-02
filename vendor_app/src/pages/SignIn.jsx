@@ -7,13 +7,19 @@ export default function SignIn(){
   const location = useLocation()
   const [email, setEmail] = useState(() => location.state?.demoApplication?.email || '')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
   const { signin } = useAuth()
   const navigate = useNavigate()
   const from = location.state?.from?.pathname || '/vendor/dashboard'
 
   function handleSubmit(event){
     event.preventDefault()
-    signin({ email, storeName: location.state?.demoApplication?.storeName }, () => navigate(from, { replace: true }))
+    setError('')
+
+    const succeeded = signin({ email, password, storeName: location.state?.demoApplication?.storeName, role: 'seller' }, () => navigate(from, { replace: true }))
+    if (!succeeded) {
+      setError('This seller account is not approved yet or has been banned by the admin team.')
+    }
   }
 
   return (
@@ -32,10 +38,11 @@ export default function SignIn(){
             <label htmlFor="seller-password" className="block text-sm font-medium text-slate-700">Password
               <input id="seller-password" type="password" autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)} placeholder="Enter your password" className="mt-1.5 block w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm focus:border-[#8fbaa3] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#cde4d6]" required />
             </label>
+            {error && <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
             <button type="submit" className="w-full rounded-full bg-[#1d5a49] px-4 py-3.5 text-sm font-semibold text-white hover:bg-[#164638]">Open seller demo</button>
           </form>
 
-          <p className="mt-4 rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-900">Demo sign-in only. Any valid email and password opens a local seller workspace. The password is discarded and is not saved.</p>
+          <p className="mt-4 rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-900">Seller access is controlled by the company admin. Only approved sellers can open a storefront and start selling.</p>
           <p className="mt-6 text-center text-sm text-slate-500">New to Vendorly? <Link to="/vendor/register" className="font-semibold text-[#28644d] hover:underline">Apply to become a seller</Link></p>
         </div>
       </div>
