@@ -51,7 +51,7 @@ export function AuthProvider({ children }){
     }
   }
 
-  function signin({ email, password, storeName, name, role = 'customer' }, cb){
+  function signin({ email, password, storeName, name, role = 'customer', logo = '' }, cb){
     const normalizedEmail = normalizeEmail(email)
     const trimmedPassword = String(password || '').trim()
     if (!normalizedEmail || !trimmedPassword) {
@@ -81,6 +81,7 @@ export function AuthProvider({ children }){
       role,
       name: String(name || '').trim() || getDisplayName({ storeName, email: normalizedEmail }),
       storeName: String(storeName || '').trim() || (role === 'seller' ? `${getDisplayName({ email: normalizedEmail })} Store` : ''),
+      logo: String(logo || '').trim(),
     }
 
     persistUser(nextUser)

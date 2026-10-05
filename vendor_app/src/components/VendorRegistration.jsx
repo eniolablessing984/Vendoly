@@ -31,8 +31,14 @@ export default function VendorRegistration(){
       event.target.value = ''
       return
     }
-    setErrors(current => ({ ...current, logo: '' }))
-    setForm(current => ({ ...current, logo: file }))
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      const dataUrl = typeof reader.result === 'string' ? reader.result : ''
+      setErrors(current => ({ ...current, logo: '' }))
+      setForm(current => ({ ...current, logo: { name: file.name, dataUrl } }))
+    }
+    reader.readAsDataURL(file)
   }
 
   function handleSubmit(event){
@@ -53,6 +59,7 @@ export default function VendorRegistration(){
       storeName: form.storeName.trim(),
       bio: form.bio.trim(),
       logoName: form.logo?.name || '',
+      logoData: form.logo?.dataUrl || '',
     })
     setApplication(saved)
     setStatus('success')
@@ -95,8 +102,9 @@ export default function VendorRegistration(){
 
             <label htmlFor="seller-logo" className="block text-sm font-medium text-slate-700">Store logo <span className="font-normal text-slate-500">(optional, max 2 MB)</span>
               <input id="seller-logo" type="file" accept="image/*" onChange={handleFile} aria-invalid={Boolean(errors.logo)} aria-describedby={errors.logo ? 'seller-logo-error' : 'seller-logo-hint'} className="mt-2 block w-full rounded-xl border border-dashed border-slate-300 bg-slate-50 p-3 text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-[#e9f3ed] file:px-4 file:py-2 file:text-xs file:font-semibold file:text-[#28644d]" />
-              {errors.logo ? <span id="seller-logo-error" role="alert" className="mt-1 block text-xs text-red-700">{errors.logo}</span> : <span id="seller-logo-hint" className="mt-1 block text-xs text-slate-500">The image is not uploaded in the frontend demo.</span>}
+              {errors.logo ? <span id="seller-logo-error" role="alert" className="mt-1 block text-xs text-red-700">{errors.logo}</span> : <span id="seller-logo-hint" className="mt-1 block text-xs text-slate-500">PNG, JPG, or WEBP images up to 2 MB.</span>}
               {form.logo && <span className="mt-1 block text-xs text-slate-600">Selected: {form.logo.name}</span>}
+              {form.logo?.dataUrl && <img src={form.logo.dataUrl} alt="Store logo preview" className="mt-3 h-16 w-16 rounded-2xl object-cover ring-2 ring-[#dfece4]" />}
             </label>
 
             <div className="pt-2"><button type="submit" disabled={status === 'submitting'} className="inline-flex items-center rounded-full bg-[#1d5a49] px-6 py-3 text-sm font-semibold text-white hover:bg-[#164638] disabled:cursor-wait disabled:opacity-60">{status === 'submitting' ? 'Submitting...' : 'Submit seller application'}</button></div>

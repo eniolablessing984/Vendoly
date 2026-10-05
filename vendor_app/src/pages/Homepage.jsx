@@ -16,6 +16,7 @@ export default function Homepage({ onAddToCart }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [activeCategory, setActiveCategory] = useState('All')
   const [sortBy, setSortBy] = useState('featured')
+  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false)
   const query = (searchParams.get('q') || '').trim().toLowerCase()
   const categories = ['All', ...new Set(products.map(product => product.category || 'Other'))]
   const visibleProducts = products
@@ -76,18 +77,18 @@ export default function Homepage({ onAddToCart }) {
         <div className="mb-7 flex items-end justify-between gap-4">
           <div><p className="text-xs font-bold uppercase tracking-[.18em] text-[#3d725a]">The good stuff</p><h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">A few things we love</h2><p className="mt-2 text-sm text-slate-500">Distinctive finds from our independent sellers.</p></div>
         </div>
-        <div className="mb-4"><h3 className="text-sm font-semibold text-slate-800">Shop by category</h3><p className="mt-1 text-xs text-slate-500">Browse the kinds of finds you are looking for.</p></div>
-        <div role="group" className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5" aria-label="Filter products by category">
+        <div className="mb-3"><h3 className="text-sm font-semibold text-slate-800">Shop by category</h3><p className="mt-1 text-[11px] text-slate-500">Browse the kinds of finds you are looking for.</p></div>
+        <div role="group" className="mb-6 flex gap-2 overflow-x-auto pb-1 sm:grid sm:grid-cols-4 sm:overflow-visible xl:grid-cols-5" aria-label="Filter products by category">
           {categories.map(category => {
             const categoryCount = category === 'All' ? products.length : products.filter(product => (product.category || 'Other') === category).length
-            return <button key={category} type="button" aria-pressed={activeCategory === category} onClick={() => setActiveCategory(category)} className={`flex min-h-20 items-center gap-3 rounded-2xl border p-3 text-left transition sm:p-4 ${activeCategory === category ? 'border-[#1d5a49] bg-[#e9f3ed] ring-1 ring-[#1d5a49]' : 'border-slate-200 bg-white hover:border-[#a9c3b3] hover:bg-[#f5faf7]'}`}><span aria-hidden="true" className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#e9f3ed] text-sm font-bold text-[#28644d]">{category.slice(0, 1)}</span><span className="min-w-0"><span className="block truncate text-sm font-semibold text-slate-800">{category === 'All' ? 'All products' : category}</span><span className="mt-1 block text-xs text-slate-600">{categoryCount} {categoryCount === 1 ? 'item' : 'items'}</span></span></button>
+            return <button key={category} type="button" aria-pressed={activeCategory === category} onClick={() => setActiveCategory(category)} className={`flex min-w-[96px] shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-left transition sm:min-w-0 sm:gap-2 sm:rounded-xl sm:p-2 ${activeCategory === category ? 'border-[#1d5a49] bg-[#e9f3ed] ring-1 ring-[#1d5a49]' : 'border-slate-200 bg-white hover:border-[#a9c3b3] hover:bg-[#f5faf7]'}`}><span aria-hidden="true" className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#e9f3ed] text-[8px] font-bold text-[#28644d] sm:h-7 sm:w-7 sm:rounded-lg sm:text-[10px]">{category.slice(0, 1)}</span><span className="min-w-0"><span className="block truncate text-[10px] font-semibold text-slate-800 sm:text-[11px]">{category === 'All' ? 'All' : category}</span><span className="mt-0.5 hidden text-[9px] text-slate-600 sm:block">{categoryCount}</span></span></button>
           })}
         </div>
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <p aria-live="polite" aria-atomic="true" className="text-sm text-slate-500">{visibleProducts.length} {visibleProducts.length === 1 ? 'result' : 'results'}{query ? <> for <strong className="font-semibold text-slate-700">{searchParams.get('q')}</strong></> : null}</p>
           <label className="flex shrink-0 items-center gap-2 text-sm text-slate-500">Sort by<select value={sortBy} onChange={event => setSortBy(event.target.value)} className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#cde4d6]"><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name</option></select></label>
         </div>
-        {visibleProducts.length ? <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{visibleProducts.map((product) => <ProductCard key={product.id} product={product} onAdd={onAddToCart} />)}</div> : <div className="rounded-3xl border border-dashed border-slate-300 bg-white py-16 text-center text-slate-500"><p>{products.length === 0 ? 'Our sellers are getting their first products ready. Please check back soon.' : 'No products match your current filters.'}</p>{products.length > 0 && <button type="button" onClick={() => { setActiveCategory('All'); setSortBy('featured'); setSearchParams({}) }} className="mt-3 font-semibold text-[#28644d] underline underline-offset-4">Clear filters</button>}</div>}
+        {visibleProducts.length ? <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{visibleProducts.map((product) => <ProductCard key={product.id} product={product} onAdd={onAddToCart} />)}</div> : <div className="rounded-3xl border border-dashed border-slate-300 bg-white py-16 text-center text-slate-500"><p>{products.length === 0 ? 'Our sellers are getting their first products ready. Please check back soon.' : 'No products match your current filters.'}</p>{products.length > 0 && <button type="button" onClick={() => { setActiveCategory('All'); setSortBy('featured'); setSearchParams({}) }} className="mt-3 font-semibold text-[#28644d] underline underline-offset-4">Clear filters</button>}</div>}
       </section>
     </Container>
   )

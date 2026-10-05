@@ -16,7 +16,14 @@ export default function SignIn(){
     event.preventDefault()
     setError('')
 
-    const succeeded = signin({ email, password, storeName: location.state?.demoApplication?.storeName, role: 'seller' }, () => navigate(from, { replace: true }))
+    const succeeded = signin({
+      email,
+      password,
+      storeName: location.state?.demoApplication?.storeName,
+      name: location.state?.demoApplication?.name,
+      logo: location.state?.demoApplication?.logoData || '',
+      role: 'seller',
+    }, () => navigate(from, { replace: true }))
     if (!succeeded) {
       setError('This seller account is not approved yet or has been banned by the admin team.')
     }

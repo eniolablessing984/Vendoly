@@ -29,6 +29,8 @@ export function create(application){
     id: Date.now().toString(),
     status: 'pending_review',
     submittedAt: new Date().toISOString(),
+    logoData: application.logoData || '',
+    logoName: application.logoName || '',
   }
   let persisted = false
   try {

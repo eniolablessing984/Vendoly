@@ -41,11 +41,11 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="mb-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard label="Pending review" value={stats.pending_review || 0} tone="bg-amber-50 text-amber-700" />
-          <StatCard label="Verified sellers" value={stats.verified || 0} tone="bg-emerald-50 text-emerald-700" />
-          <StatCard label="Banned sellers" value={stats.banned || 0} tone="bg-red-50 text-red-700" />
-          <StatCard label="Total requests" value={applications.length} tone="bg-slate-100 text-slate-700" />
+        <div className="mb-7 grid grid-cols-4 gap-2 sm:gap-3">
+          <StatCard label="Pending" value={stats.pending_review || 0} tone="bg-amber-50 text-amber-700" />
+          <StatCard label="Verified" value={stats.verified || 0} tone="bg-emerald-50 text-emerald-700" />
+          <StatCard label="Banned" value={stats.banned || 0} tone="bg-red-50 text-red-700" />
+          <StatCard label="Total" value={applications.length} tone="bg-slate-100 text-slate-700" />
         </div>
 
         <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
@@ -93,9 +93,9 @@ export default function AdminDashboardPage() {
 
 function StatCard({ label, value, tone }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-sm text-slate-500">{label}</p>
-      <p className={`mt-3 text-3xl font-semibold tracking-tight ${tone}`}>{value}</p>
+    <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-sm sm:p-4">
+      <p className="text-[9px] font-medium uppercase tracking-[.12em] text-slate-500 sm:text-[10px]">{label}</p>
+      <p className={`mt-2 text-lg font-semibold tracking-tight sm:mt-3 sm:text-2xl ${tone}`}>{value}</p>
     </div>
   )
 }
