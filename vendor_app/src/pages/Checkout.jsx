@@ -9,12 +9,14 @@ import { sendOrderNotification } from '../services/notificationService'
 import * as productService from '../data/productService'
 
 const emptyCustomer = { name: '', email: '', phone: '', address: '', city: '', region: '', postal: '', country: '' }
+const emptyCardDetails = { cardholderName: '', cardType: '', cardNumber: '', expiryDate: '', cvv: '', bank: '' }
 
 export default function Checkout(){
   const { cart, clearCart, storageAvailable } = useCart()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [customer, setCustomer] = useState(emptyCustomer)
+  const [cardDetails, setCardDetails] = useState(emptyCardDetails)
   const [paymentMethod, setPaymentMethod] = useState('card')
   const [error, setError] = useState('')
   const checkoutItems = productService.refreshCartItems(cart)
@@ -29,6 +31,11 @@ export default function Checkout(){
     setCustomer(current => ({ ...current, [name]: value }))
   }
 
+  function updateCardDetails(event){
+    const { name, value } = event.target
+    setCardDetails(current => ({ ...current, [name]: value }))
+  }
+
   async function handlePlaceOrder(event){
     event.preventDefault()
     setError('')
@@ -41,17 +48,26 @@ export default function Checkout(){
       return
     }
 
+    if (paymentMethod === 'card') {
+      const requiredCardFields = ['cardholderName', 'cardType', 'cardNumber', 'expiryDate', 'cvv', 'bank']
+      const missingCardDetails = requiredCardFields.some(key => !String(cardDetails[key] || '').trim())
+      if (missingCardDetails) {
+        setError('Please complete all card details before paying with your local bank card.')
+        return
+      }
+    }
+
     setLoading(true)
     let payment = { method: paymentMethod, status: 'pending' }
     if (paymentMethod === 'card') {
       try {
-        const result = await simulateCardPayment({ amount: totalMinor / 100 })
+        const result = await simulateCardPayment({ amount: totalMinor / 100, cardDetails })
         if (result.status !== 'succeeded') {
           setError('The demo payment could not be completed. Please try again.')
           setLoading(false)
           return
         }
-        payment = { method: 'card', status: 'paid', provider: result.provider, paymentId: result.id, amountMinor: totalMinor, currency: DEMO_CURRENCY }
+        payment = { method: 'card', status: 'paid', provider: result.provider, paymentId: result.id, amountMinor: totalMinor, currency: DEMO_CURRENCY, bank: cardDetails.bank || 'Local bank', cardType: cardDetails.cardType || 'Card' }
       } catch {
         setError('The demo payment could not be completed. Please try again.')
         setLoading(false)
@@ -126,13 +142,30 @@ export default function Checkout(){
             <legend className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#3d725a]">2. Payment method</legend>
             <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition ${paymentMethod === 'card' ? 'border-[#1d5a49] bg-[#f3f8f5] ring-1 ring-[#1d5a49]' : 'border-slate-200 bg-white'}`}>
               <input type="radio" name="payment" value="card" checked={paymentMethod === 'card'} onChange={() => setPaymentMethod('card')} />
-              <span><span className="block text-sm font-semibold text-slate-900">Card payment (demo)</span><span className="mt-1 block text-xs text-slate-500">The interface simulates a successful payment. No card information is requested or charged.</span></span>
+              <span><span className="block text-sm font-semibold text-slate-900">Local bank card</span><span className="mt-1 block text-xs text-slate-500">Use your debit or prepaid card to pay instantly from your local bank account.</span></span>
             </label>
             <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition ${paymentMethod === 'cod' ? 'border-[#1d5a49] bg-[#f3f8f5] ring-1 ring-[#1d5a49]' : 'border-slate-200 bg-white'}`}>
               <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} />
               <span><span className="block text-sm font-semibold text-slate-900">Cash on delivery (demo)</span><span className="mt-1 block text-xs text-slate-500">Payment will show as due on delivery in this prototype.</span></span>
             </label>
           </fieldset>
+
+          {paymentMethod === 'card' && (
+            <div className="mt-5 rounded-2xl border border-[#dfeae3] bg-[#f8fbf9] p-4">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h3 className="text-sm font-semibold text-slate-900">Card details</h3>
+                <span className="rounded-full bg-[#eaf6ef] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.12em] text-[#28644d]">Secure</span>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="text-xs font-medium text-slate-700 sm:col-span-2">Cardholder name<input name="cardholderName" value={cardDetails.cardholderName} onChange={updateCardDetails} placeholder="Name on card" className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#cde4d6]" required /></label>
+                <label className="text-xs font-medium text-slate-700">Card type<select name="cardType" value={cardDetails.cardType} onChange={updateCardDetails} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#cde4d6]" required><option value="">Select card type</option><option value="Visa">Visa</option><option value="MasterCard">MasterCard</option><option value="Verve">Verve</option><option value="American Express">American Express</option><option value="Discover">Discover</option></select></label>
+                <label className="text-xs font-medium text-slate-700">Local bank<select name="bank" value={cardDetails.bank} onChange={updateCardDetails} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#cde4d6]" required><option value="">Select your bank</option><option value="Access Bank">Access Bank</option><option value="First Bank">First Bank</option><option value="GTBank">GTBank</option><option value="Zenith Bank">Zenith Bank</option><option value="UBA">UBA</option><option value="Other">Other local bank</option></select></label>
+                <label className="text-xs font-medium text-slate-700 sm:col-span-2">Card number<input name="cardNumber" inputMode="numeric" value={cardDetails.cardNumber} onChange={updateCardDetails} placeholder="1234 5678 9012 3456" className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#cde4d6]" required /></label>
+                <label className="text-xs font-medium text-slate-700">Expiry date<input name="expiryDate" value={cardDetails.expiryDate} onChange={updateCardDetails} placeholder="MM/YY" className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#cde4d6]" required /></label>
+                <label className="text-xs font-medium text-slate-700">CVV<input name="cvv" inputMode="numeric" value={cardDetails.cvv} onChange={updateCardDetails} placeholder="123" className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#cde4d6]" required /></label>
+              </div>
+            </div>
+          )}
 
           {hasStockIssue && <p role="alert" className="mt-5 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">{hasUnavailableItems ? 'A product is no longer available.' : 'A cart quantity is above current availability.'} <Link to="/cart" className="font-semibold underline underline-offset-2">Review your cart</Link> before placing the order.</p>}
           {error && <p role="alert" className="mt-5 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}

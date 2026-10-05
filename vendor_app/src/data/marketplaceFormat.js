@@ -1,4 +1,4 @@
-export const DEMO_CURRENCY = 'USD'
+export const DEMO_CURRENCY = 'NGN'
 
 export function toMinorUnits(amount) {
   const value = Number(amount)
@@ -7,7 +7,7 @@ export function toMinorUnits(amount) {
 
 export function formatMoney(amount, currency = DEMO_CURRENCY) {
   const value = Number(amount)
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(Number.isFinite(value) ? value : 0)
+  return new Intl.NumberFormat('en-NG', { style: 'currency', currency }).format(Number.isFinite(value) ? value : 0)
 }
 
 export function formatMinorMoney(amountMinor, currency = DEMO_CURRENCY) {
